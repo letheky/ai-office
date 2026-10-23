@@ -1,0 +1,11 @@
+.live-speech{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:6px 0 10px;font-size:12px;line-height:1.5}
+.live-speech .live-speech-button{width:auto;min-height:44px;padding:6px 12px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:#334155;font:inherit;font-weight:600;cursor:pointer}
+.live-speech .live-speech-button[aria-pressed=true]{background:#fff1f2;border-color:#fb7185;color:#be123c}
+.live-speech .live-speech-button:disabled{opacity:.55;cursor:default}
+.live-speech .live-speech-button:focus-visible{outline:2px solid #6366f1;outline-offset:2px}
+.live-speech-status{flex:1;min-width:160px;color:#64748b}
+.live-speech-preview{flex-basis:100%;color:#64748b;font-style:italic;overflow-wrap:anywhere;max-height:4.5em;overflow:auto}
+.live-speech [hidden]{display:none!important}
+.dark .live-speech .live-speech-button{background:#1e293b;border-color:#475569;color:#e2e8f0}
+.dark .live-speech .live-speech-button[aria-pressed=true]{background:#4c1d2d;border-color:#fb7185;color:#fda4af}
+.dark .live-speech-status,.dark .live-speech-preview{color:#94a3b8}

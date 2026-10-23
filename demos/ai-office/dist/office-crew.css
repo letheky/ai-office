@@ -1,0 +1,58 @@
+/* Labels and summary for the 3D AI crew (office-crew.js). */
+.crew-hud{display:flex;align-items:center;position:absolute;left:50%;top:6px;transform:translateX(-50%);max-width:calc(100% - 300px);padding:2px 10px;border-radius:10px;background:#ffffffb8;font-size:9px;white-space:nowrap;color:#61745b;pointer-events:none}
+.crew-hud[data-alert="exhausted"]{color:#a64a2f;background:#fff1ea}
+.crew-hud[data-alert="error"]{color:#a8231d;background:#ffecea}
+.crew-label{position:absolute;pointer-events:auto;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;gap:1px;width:max-content;max-width:120px;padding:0 3px;text-align:center;border:0;background:none;color:#43554a;font-size:7px;line-height:1.2;text-shadow:0 0 2px #fff,0 0 3px #fff,0 0 4px #fff;opacity:.85}
+.crew-label-line{display:flex;gap:3px;white-space:nowrap}
+.crew-label-top{display:inline}
+.crew-label-top::after{content:' ·';color:#8d998b}
+.crew-label-name{font-weight:600}
+.crew-label-state{display:inline;font-size:7px;font-weight:500}
+.crew-label-host,.crew-label-detail,.crew-bars{display:none}
+.crew-label.selected,.crew-label:hover{z-index:5;opacity:1;width:150px;padding:3px 6px 4px;font-size:9px;border-radius:6px;background:#ffffffe8;text-shadow:none;box-shadow:0 1px 6px #38513526}
+.crew-label.selected{outline:2px solid #43674b}
+.crew-label:hover .crew-bars,.crew-label.selected .crew-bars,.crew-label:hover .crew-label-host,.crew-label.selected .crew-label-host,.crew-label:hover .crew-label-detail,.crew-label.selected .crew-label-detail{display:block}
+.crew-label:hover .crew-label-state,.crew-label.selected .crew-label-state{font-size:10px}
+.crew-label-host{color:#8d998b;font-size:8px}
+.crew-label-detail{color:#7b896e;font-size:9px;white-space:normal;overflow-wrap:anywhere}
+.crew-bars{flex-direction:column;gap:2px;margin-top:2px;width:100%}
+.crew-bar{display:flex;align-items:center;gap:4px;font-size:8px;color:#97a28d}
+.crew-bar b{width:7px;font-weight:600}
+.crew-bar em{flex:1;height:4px;border-radius:3px;background:#e6ebde;overflow:hidden}
+.crew-bar i{display:block;height:100%;width:0;background:#62d27a;transition:width .4s}
+.crew-bar i[data-level="low"]{background:#f2b84b}
+.crew-bar i[data-level="out"],.crew-bar i[data-level="unknown"]{background:#e0524a}
+.crew-bar i[data-level="unknown"]{opacity:.25;width:100%!important}
+.crew-label[data-state="working"] .crew-label-state{color:#1c8db4}
+.crew-label[data-state="low"] .crew-label-state{color:#b9811a}
+.crew-label[data-state="exhausted"] .crew-label-state,.crew-label[data-state="error"] .crew-label-state{color:#b0302a}
+.crew-label[data-state="error"]{animation:crew-alert 1s steps(2) infinite}
+.crew-label[data-state="offline"]{opacity:.6}
+@keyframes crew-alert{50%{opacity:.45}}
+
+
+.crew-bubble{position:absolute;transform:translate(22px,-50%);pointer-events:none;padding:1px 6px;border-radius:8px;background:#ffffffe6;color:#43554a;font-size:7px;line-height:1.3;white-space:nowrap;box-shadow:0 1px 4px #38513522;z-index:4}
+.crew-bubble[hidden]{display:none}
+.crew-use{display:none;margin-top:3px;padding:2px 6px;border-radius:6px;background:#43674b;color:#fff;font-size:9px;text-align:center;cursor:pointer}
+.crew-label:hover .crew-use,.crew-label.selected .crew-use{display:block}
+/* "Nhịp văn phòng": a scrollable live log instead of two fixed lines. */
+.activity{align-items:flex-start}
+#activity-feed{flex-direction:column;gap:6px;max-height:320px;overflow-y:auto}
+#activity-feed .feed-item{flex:none;width:100%}
+button.feed-item{font:inherit;color:inherit;text-align:left;border:0;background:none;padding:3px 4px;border-radius:10px;cursor:pointer}
+button.feed-item:hover{background:#f3f5ea}
+.feed-item p{margin:0;font-size:11px;line-height:1.35}
+.feed-item small{color:#97a28d;font-size:9px}
+.feed-error .feed-icon{background:#ffecea;color:#b0302a}
+.feed-warn .feed-icon{background:#fff4de;color:#b9811a}
+.feed-ok .feed-icon{background:#e6f4e4;color:#2f7d43}
+.feed-info .feed-icon{background:#e3f1f8;color:#1c8db4}
+
+.feed-info p { color:#1d4ed8; }
+.feed-ok p { color:#15803d; }
+.feed-error p { color:#b91c1c; }
+.feed-warn p { color:#92400e; }
+:root.dark body .feed-info p { color:hsl(213 94% 73%); }
+:root.dark body .feed-ok p { color:hsl(142 69% 65%); }
+:root.dark body .feed-error p { color:hsl(0 94% 82%); }
+:root.dark body .feed-warn p { color:hsl(43 96% 64%); }

@@ -1,0 +1,15 @@
+node_modules/
+.env
+.env.*
+!.env.example
+.runtime/
+server/data/
+local/data/
+output/
+release/
+*.log
+*.db*
+*.sqlite*
+auth.json
+.credentials.json
+rclone.conf

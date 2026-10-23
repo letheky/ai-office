@@ -1,0 +1,13 @@
+const express=require('express'),path=require('path');
+const {authenticate}=require('./lib/auth');
+const app=express();
+app.disable('x-powered-by');
+app.use(authenticate);
+app.use(express.json({limit:'2mb'}));
+require('./db/database').getDb();
+app.use('/api/ai-office',require('./routes/aiOffice'));
+app.use('/ai-office',express.static(path.resolve(__dirname,'../../demos/ai-office/dist')));
+app.get('/',(req,res)=>res.redirect('/ai-office/'));
+app.use((error,req,res,next)=>{console.error(error.message);res.status(500).json({success:false,error:'Không xử lý được yêu cầu'});});
+if(require.main===module || process.argv[2]==='server') app.listen(Number(process.env.PORT||3010),process.env.HOST||'127.0.0.1',()=>console.log(`Office AI: http://${process.env.HOST||'127.0.0.1'}:${process.env.PORT||3010}/ai-office/`));
+module.exports=app;

@@ -1,0 +1,30 @@
+.office-capabilities { font:13px/1.6 system-ui; color:#263e30; }
+.office-capabilities h2 { font-size:18px; margin:0; }
+.office-capabilities h3 { font-size:15px; margin:0 0 8px; }
+.office-capabilities h4 { font-size:13px; margin:0; }
+.office-capabilities p { margin:7px 0; }
+.office-capabilities > * { flex-shrink:0; }
+.office-capabilities .cap-intro { margin:0; }
+.office-capabilities .cap-machine { display:block; font-weight:600; }
+.office-capabilities select { display:block; width:100%; min-width:0; margin-top:5px; font:inherit; padding:10px; border:1px solid #bdcdb9; border-radius:8px; background:#fff; color:inherit; }
+.office-capabilities .cap-tool-list { margin:0; padding:12px; border:1px solid #dce4d7; border-radius:10px; background:#f4f7ef; }
+.office-capabilities .cap-tool-list > div { display:flex; justify-content:space-between; align-items:start; gap:12px; padding:6px 0; }
+.office-capabilities dt { font-weight:600; }
+.office-capabilities dd { margin:0; text-align:right; color:#687565; }
+.office-capabilities dd small { display:block; }
+.office-capabilities .cap-ready { color:#315b3e; }
+.office-capabilities .cap-muted { color:#677662; font-size:11px; }
+.office-capabilities article { border-bottom:1px solid #dce4d7; padding:13px 0; overflow-wrap:anywhere; }
+.office-capabilities .cap-feature-title { display:flex; gap:6px 12px; flex-wrap:wrap; align-items:baseline; }
+.office-capabilities .cap-badge { font-size:10px; color:#5b6e55; }
+.office-capabilities .cap-example { font:inherit; font-size:12px; padding:6px 10px; border:1px solid #bdcdb9; border-radius:7px; background:#fff; color:#315b3e; cursor:pointer; }
+.office-capabilities .cap-example:disabled { opacity:.5; cursor:default; }
+.office-capabilities .cap-section { padding-top:8px; }
+.office-capabilities summary { cursor:pointer; font-weight:650; }
+.office-capabilities ul { padding-left:18px; }
+.office-capabilities li { margin:8px 0; }
+.office-capabilities a { color:#315b3e; font-weight:650; }
+.office-capabilities .cap-error { color:#8a4226; }
+.office-capabilities :is(select,button,summary,a):focus-visible { outline:3px solid #6b9f72; outline-offset:2px; }
+@media(max-width:450px) { .office-capabilities .cap-tool-list > div { display:block; } .office-capabilities dd { text-align:left; } }
+.office-capabilities .cap-host-profile { border-left:3px solid #bdcdb9; padding-left:12px; }
