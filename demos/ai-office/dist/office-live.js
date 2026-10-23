@@ -83,8 +83,9 @@ if (location.protocol === 'file:') {
   const cli=cliFeatures({api,make,renderAnswer,capabilities:()=>capabilities,visibleId:()=>displayedResultId,contextJob:job=>contextJobForDisplay(job,jobs)});
   const routingText = value => String(value || '').replace(/(^|[→·]\s*|Bàn giao từ )(?:An|Linh|Minh|Mai|Bông|Nam|Hà|Tú)(?=\s|$)/g, '$1AI');
   const providerName = provider => provider === 'codex' ? 'Codex' : 'Claude';
-  // Default to the local worker machine (online first) instead of the legacy VPS group.
-  const preferredMachine = caps => { const machines = localMachines(caps || {}); return machines.find(machine => machine.online) || machines[0]; };
+  // Default to the Windows machine that holds the video pipeline, then any online local worker, never the legacy VPS group.
+  const preferredMachine = caps => { const machines = localMachines(caps || {}); const windows = machine => (machine.profile?.platform || machine.policy?.declaredPlatform) === 'win32';
+    return machines.find(machine => machine.online && windows(machine)) || machines.find(machine => machine.online) || machines[0]; };
   const machineLabel = machine => `${machine.name} · ${{linux:'Linux',win32:'Windows',darwin:'macOS'}[machine.profile?.platform || machine.policy?.declaredPlatform] || 'chưa rõ OS'} · ${machine.online ? 'đang online' : 'offline'}`;
   const executorName = executor => isVpsExecutor(executor) ? 'VPS' :
     localMachines(capabilities || {}).find(machine => machine.id === executor || machine.members?.some(member => member.id === executor))?.name || 'Máy local';

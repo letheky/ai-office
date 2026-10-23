@@ -1,11 +1,9 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const net = require('net');
 const { execFile } = require('child_process');
 const { promisify } = require('util');
 const exec = promisify(execFile);
-const { driveReady } = require('./ai-office-drive');
 const { normalizeTools, normalizeProfile } = require('../src/services/aiOfficeCapabilities');
 
 async function probe(binary, args) {
@@ -14,18 +12,14 @@ async function probe(binary, args) {
     return { available: true, stdout };
   } catch (e) { return { available: e.code !== 'ENOENT', stdout: '' }; }
 }
-function desktopReady(socketPath) {
+// Tools for the YouTube video stack: Python scripts, Node/Remotion, ffmpeg, Git and the channel's Brave over CDP.
+function cdpVersion(port) {
   return new Promise(resolve => {
-    const connection = net.createConnection(socketPath);
-    const finish = ready => { connection.destroy(); resolve(ready); };
-    connection.setTimeout(1200, () => finish(false));
-    connection.on('error', () => finish(false));
-    connection.on('connect', () => connection.end(JSON.stringify({ name: 'desktop_status', arguments: {}, client: 'office-capability-check' }) + '\n'));
-    let data = '';
-    connection.on('data', chunk => { data += chunk; if (data.length > 20000) finish(false); });
-    connection.on('end', () => {
-      try { finish(JSON.parse(JSON.parse(data).content[0].text).connected === true); } catch { finish(false); }
+    const request = require('http').get({ host: '127.0.0.1', port, path: '/json/version', timeout: 1500 }, response => {
+      let data = ''; response.on('data', chunk => { data += chunk; if (data.length > 20000) request.destroy(); });
+      response.on('end', () => { try { resolve(JSON.parse(data).Browser || 'CDP'); } catch { resolve(null); } });
     });
+    request.on('timeout', () => request.destroy()); request.on('error', () => resolve(null));
   });
 }
 async function readTools(env = process.env) {
@@ -33,24 +27,27 @@ async function readTools(env = process.env) {
     const local = path.join(os.homedir(), '.local/bin', process.platform === 'win32' ? name + '.exe' : name);
     return fs.existsSync(local) ? local : name;
   };
-  const socket = path.join(env.XDG_RUNTIME_DIR || `/run/user/${os.userInfo().uid}`, 'ai-office-computer.sock');
-  const [browser, ffmpeg, download, desktop, driveState] = await Promise.all([
-    probe(env.AI_OFFICE_BROWSER_BIN || bin('browser-harness'), ['doctor', '--json', '--require-existing-daemon']),
-    probe(bin('ffmpeg'), ['-version']), probe(bin('yt-dlp'), ['--version']),
-    fs.existsSync(socket) ? desktopReady(socket) : false, driveReady(env),
+  const windows = process.platform === 'win32';
+  const pythonProbe = async () => {
+    // The Windows Store "python" alias exists but prints nothing, so prefer the py launcher there.
+    for (const [binary, args] of windows ? [['py', ['-3', '--version']], ['python', ['--version']]] : [['python3', ['--version']], ['python', ['--version']]]) {
+      const result = await probe(binary, args); if (result.stdout) return result;
+    }
+    return probe(windows ? 'python' : 'python3', ['--version']);
+  };
+  const cdpPort = Number(env.AI_OFFICE_CDP_PORT || 9333);
+  const [ffmpeg, python, git, cdp] = await Promise.all([
+    probe(bin('ffmpeg'), ['-version']), pythonProbe(), probe('git', ['--version']), cdpVersion(cdpPort),
   ]);
-  let health = {};
-  try { health = JSON.parse(browser.stdout); } catch {}
   const checkedAt = Date.now();
-  const version = output => output.match(/(?:ffmpeg version )?([\w.+-]+)/)?.[1] || null;
+  const version = output => output.match(/(?:ffmpeg version |Python |git version )?([\w.+-]+)/)?.[1] || null;
+  const nodeMajor = Number(process.versions.node.split('.')[0]);
   return normalizeTools({
-    browser: { available: browser.available, ready: health.healthy === true && process.platform === 'linux' && env.AI_OFFICE_BROWSER_HARNESS === '1',
-      enabled: process.platform === 'linux' && env.AI_OFFICE_BROWSER_HARNESS === '1', version: health.version, checkedAt },
-    desktop: { available: fs.existsSync(socket), ready: desktop && process.platform === 'linux' && env.AI_OFFICE_COMPUTER_USE === '1',
-      enabled: process.platform === 'linux' && env.AI_OFFICE_COMPUTER_USE === '1', checkedAt },
+    python: { available: python.available, ready: !!python.stdout, enabled: true, version: version(python.stdout), checkedAt },
+    node: { available: true, ready: nodeMajor >= 22, enabled: true, version: process.versions.node, checkedAt },
     ffmpeg: { available: ffmpeg.available, ready: !!ffmpeg.stdout, enabled: true, version: version(ffmpeg.stdout), checkedAt },
-    drive: { ...driveState, enabled: driveState.available, checkedAt },
-    download: { available: download.available, ready: !!download.stdout, enabled: true, version: version(download.stdout), checkedAt },
+    git: { available: git.available, ready: !!git.stdout, enabled: true, version: version(git.stdout), checkedAt },
+    browser: { available: !!cdp, ready: !!cdp, enabled: true, version: cdp ? String(cdp).replace(/[^\w.+ -]/g, ' ').slice(0, 60) : null, checkedAt },
   });
 }
 async function readProfile() {

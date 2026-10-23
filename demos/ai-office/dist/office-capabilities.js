@@ -62,7 +62,7 @@ function render() {
   profile.append(make('small', 'cap-muted', 'Model Claude/ChatGPT chạy trên dịch vụ của nhà cung cấp. CPU/GPU máy này chủ yếu ảnh hưởng công cụ, tệp và dựng media, không quyết định độ thông minh của model.'));
   pane.append(profile);
   const toolList = make('dl', 'cap-tool-list');
-  for (const [id, label] of [['browser', 'Chrome / browser-harness'], ['desktop', 'Desktop / computer use'], ['download', 'Tải media / yt-dlp'], ['ffmpeg', 'Dựng media / FFmpeg'], ['drive', 'Drive chung / rclone']]) {
+  for (const [id, label] of [['python', 'Python (kịch bản, giọng, ảnh, đăng)'], ['node', 'Node 22+ (Remotion)'], ['ffmpeg', 'FFmpeg (âm thanh, QA)'], ['git', 'Git'], ['browser', 'Brave CDP cổng 9333']]) {
     const row = make('div'); row.append(make('dt', '', label));
     const state = toolState(id), value = make('dd', state === 'Sẵn sàng' ? 'cap-ready' : '', state);
     const tool = machine()?.tools?.[id];
@@ -96,8 +96,8 @@ function render() {
     const item = make('p'); item.append(make('strong', '', `${d.agent} · ${d.role}: `), document.createTextNode(d.detail)); departments.append(item);
   }
   pane.append(departments);
-  const repos = make('details', 'cap-section'); repos.append(make('summary', '', '7 repository mã nguồn mở đã chọn lọc'));
-  repos.append(make('p', 'cap-muted', 'Kiểm tra nguồn và giấy phép ngày 21/10/2026. Mã nguồn mở không đồng nghĩa mọi dịch vụ cloud/model đi kèm đều miễn phí.'));
+  const repos = make('details', 'cap-section'); repos.append(make('summary', '', `${c.repositories.length} công cụ trong stack`));
+  repos.append(make('p', 'cap-muted', 'Phần trả tiền chỉ có ElevenLabs (giọng) và subscription Codex (ảnh). YouTube API, Remotion (cá nhân/nhóm dưới 4 người), ffmpeg, Python, Node miễn phí.'));
   for (const repo of c.repositories) {
     const item = make('article'); const link = make('a', '', repo.name); link.href = repo.url; link.target = '_blank'; link.rel = 'noopener noreferrer';
     item.append(link, make('small', 'cap-muted', ` · ${repo.license}`), make('p', '', repo.fit));
@@ -116,7 +116,7 @@ async function refresh() {
     if (!response.ok || !json.success) throw new Error(json.error || 'Không đọc được năng lực. Hãy đăng nhập lại.');
     data = json.data;
     if (!selectedMachine || (selectedMachine !== 'vps' && !data.machines.some(m => m.id === selectedMachine))) {
-      selectedMachine = data.machines.find(m => m.online && m.tools?.browser?.ready)?.id || 'vps';
+      selectedMachine = data.machines.find(m => m.online && m.profile?.platform === 'win32')?.id || data.machines.find(m => m.online)?.id || 'vps';
     }
     // Avoid resetting focus, dropdowns and expanded sections on every heartbeat.
     const signature = JSON.stringify(data);
