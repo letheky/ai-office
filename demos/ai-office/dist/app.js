@@ -37,7 +37,7 @@ function openTask(){showModal('task-modal');setTimeout(()=>$('brief').focus(),80
 $('new-task').onclick=openTask;$('assign-agent').onclick=openTask;
 function createTask(brief){if(tasks.filter(t=>t.elapsed<20).length>=4){toast('Hàng chờ đã có 4 việc. Đợi cả đội hoàn thành một việc nhé.');return;}let t={id:crypto.randomUUID(),brief:brief.trim(),elapsed:0,approved:false};tasks.push(t);if(tasks.length>12)tasks=tasks.slice(-12);save();renderTasks();addActivity('🌱',`Đã nhận đề bài: ${t.brief}`);toast(paused?'Đã nhận đề bài. Bấm tiếp tục để cả đội bắt đầu.':'Đã giao việc. Cả đội bắt đầu rồi!');}
 $('task-form').onsubmit=e=>{e.preventDefault();let brief=$('brief').value.trim();if(!brief){$('brief').setCustomValidity('Bạn nhập một đề bài trước nhé.');$('brief').reportValidity();return;}$('brief').setCustomValidity('');createTask(brief);hideModal('task-modal');$('brief').value='';};$('brief').oninput=()=>$('brief').setCustomValidity('');
-document.querySelectorAll('[data-brief]').forEach(b=>b.onclick=()=>{$('brief').value=b.dataset.brief;$('brief').setCustomValidity('');$('brief').focus();});
+document.querySelectorAll('[data-brief]').forEach(b=>b.onclick=()=>{const brief=$('brief');brief.value=b.dataset.brief;brief.setCustomValidity('');brief.focus();const at=brief.value.indexOf('NN');if(at>=0)brief.setSelectionRange(at,at+2);});
 $('sample-task').onclick=()=>createTask('Chuẩn bị 3 bài quảng bá thảm yoga cho tuần này');
 $('tasks-nav').onclick=()=>{$('tasks-section').scrollIntoView({behavior:'smooth',block:'center'});$('tasks-section').animate([{background:'#e5edda'},{background:'transparent'}],{duration:1200});};
 $('team-nav').onclick=()=>{selectAgent((selected+1)%agents.length);if(innerWidth<850)$('agent-detail').scrollIntoView({behavior:'smooth',block:'center'});};$('office-nav').onclick=()=>{document.querySelector('.office-card').scrollIntoView({behavior:'smooth',block:'center'});};
@@ -207,7 +207,7 @@ agents.forEach((a,i)=>{
   label.setAttribute('aria-label',`${a.name}, ${a.role}`);label.onclick=()=>selectAgent(i);
   label.addEventListener('pointerdown',e=>{e.stopPropagation();selectAgent(i);});$('labels').append(label);a.label=label;
 });
-const deptLabels=[{text:'BÀN QUẢN LÝ',p:new THREE.Vector3(0,.6,5.4)},{text:'GÓC THƯ GIÃN',p:new THREE.Vector3(.2,.55,2.2)},{text:'CÀ PHÊ',p:new THREE.Vector3(8.7,.55,3.9)}];deptLabels.forEach(l=>{l.el=node('span','dept-label',l.text);$('labels').append(l.el);});
+const deptLabels=[];deptLabels.forEach(l=>{l.el=node('span','dept-label',l.text);$('labels').append(l.el);});
 let ring=mesh(new THREE.TorusGeometry(.59,.022,6,48),0x8aab75,0,.45,3.8);ring.rotation.x=-Math.PI/2;ring.castShadow=false;updateSelection=i=>{let[x,z]=agents[i].pos;ring.position.set(x,.445,z+.1);};
 // Walk along the open aisles rather than cutting through desks. Movement is visual;
 // real task status still comes from the AI office API.
@@ -295,8 +295,10 @@ let parcel=box(.23,.23,.23,0xc6a874,0,3,0,.035);parcel.visible=false;let pathPoi
 const point=new THREE.Vector3();let width,height;function resize(){width=holder.clientWidth;height=holder.clientHeight;if(!width||!height)return;let aspect=width/height;let view=aspect<1.3?25:21;cam.left=-view*aspect;cam.right=view*aspect;cam.top=view;cam.bottom=-view;cam.updateProjectionMatrix();renderer.setSize(width,height,false);}new ResizeObserver(resize).observe(holder);resize();
 function setView(name){
   const views={all:[0,0,1.8],work:[0,-2.5,2.8],back:[-1,2.5,2.8],break:[6,2.5,3]};
-  const [x,z,zoom]=views[name];
-  controls.target.set(x,.5,z);cam.position.set(x+19,29,z+29);cam.zoom=zoom;cam.updateProjectionMatrix();controls.update();
+  let [x,z,zoom]=views[name];
+  // Default overview faces the back wall head-on from a low angle, zoomed so ~28 world units span the width (capped so the room fits vertically); area views keep the diagonal angle.
+  if(name==='all')zoom=Math.min((cam.right-cam.left)/28,(cam.top-cam.bottom)/12.7);
+  controls.target.set(x,.5,z);if(name==='all')cam.position.set(x,19.1,z+41);else cam.position.set(x+19,29,z+29);cam.zoom=zoom;cam.updateProjectionMatrix();controls.update();
   document.querySelectorAll('.scene-places button').forEach(button=>button.classList.toggle('active',button.dataset.view===name));
 }
 document.querySelectorAll('.scene-places button').forEach(button=>button.onclick=()=>setView(button.dataset.view));

@@ -44,3 +44,19 @@ test('runtime isolates inherited accounts and strips API credentials from CLI en
   assert.equal(fs.readdirSync(path.join(temp,'.runtime/profiles/codex')).length,0);
  } finally { fs.rmSync(temp,{recursive:true,force:true}); }
 });
+test('remote worker accepts only an HTTPS server URL from .env, without credentials',()=>{
+ const {serverUrl}=require('../scripts/runtime');
+ assert.equal(serverUrl('',3010),'http://127.0.0.1:3010');
+ assert.equal(serverUrl('https://office.example.org/',3010),'https://office.example.org');
+ assert.equal(serverUrl('http://localhost:4000',3010),'http://localhost:4000');
+ for(const bad of ['http://office.example.org','https://user:pass@office.example.org','https://office.example.org/ai-office','ftp://office.example.org','not a url'])
+  assert.throws(()=>serverUrl(bad,3010),undefined,bad);
+ const temp=fs.mkdtempSync(path.join(os.tmpdir(),'office-remote-test-'));
+ try {
+  fs.mkdirSync(path.join(temp,'scripts'));fs.copyFileSync(path.join(root,'scripts/runtime.js'),path.join(temp,'scripts/runtime.js'));
+  fs.writeFileSync(path.join(temp,'.env'),'OFFICE_USER=test\nOFFICE_PASSWORD=test-runtime-password-1234\nAI_OFFICE_SERVER_URL=https://office.example.org\nAI_OFFICE_MACHINE_NAME=PC Windows\n');
+  const script=`require(${JSON.stringify(path.join(temp,'scripts/runtime.js'))}).configure();const assert=require('node:assert/strict');assert.equal(process.env.AI_OFFICE_SERVER_URL,'https://office.example.org');assert.equal(process.env.AI_OFFICE_MACHINE_NAME,'PC Windows');`;
+  const result=spawnSync(process.execPath,['-e',script],{cwd:root,env:{...process.env,NODE_PATH:path.join(root,'node_modules')},encoding:'utf8'});
+  assert.equal(result.status,0,result.stderr);
+ } finally { fs.rmSync(temp,{recursive:true,force:true}); }
+});

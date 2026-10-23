@@ -14,6 +14,9 @@ html, body.office-workspace { height: 100%; overflow: hidden; }
 .office-workspace .page-heading p { margin: 4px 0 0; font-size: 11px; }
 .office-workspace .work-area { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0,1fr) minmax(380px,46%); gap: 16px; }
 .office-workspace .office-card { min-height: 0; height: 100%; }
+/* 3D overlays hidden (controls, area buttons, "AI: … sẵn sàng" HUD); drag/scroll still rotate and zoom. Elements stay in the DOM because scripts bind them. */
+.office-workspace .scene-caption, .office-workspace .scene-places, .office-workspace .crew-hud { display: none; }
+.office-workspace .page-heading, .office-workspace .workspace-switch, .office-workspace .demo-tag { display: none !important; }
 .office-workspace #scene { min-height: 0; height: 100%; }
 .office-workspace .right-panel { min-width: 0; min-height: 0; height: 100%; display: flex; flex-direction: column; align-items: stretch; gap: 0; border: 1px solid #dfe6da; border-radius: 16px; background: #fbfcf8; overflow: hidden; }
 .workspace-panel-heading { display: flex; align-items: center; justify-content: space-between; flex: none; gap: 10px; padding: 16px; }
@@ -62,18 +65,19 @@ html, body.office-workspace { height: 100%; overflow: hidden; }
 @media (min-width: 901px) {
   .office-workspace .app-layout main { overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
   .office-workspace .work-area { flex: none; height: max(560px, calc(100dvh - 150px)); }
-  .office-workspace:not(.is-chat-expanded):has(.live-quota-overview[open]) .app-layout main {
+  /* Quota panel sits under the 3D office in the left column; the task panel spans the full height. */
+  .office-workspace:not(.is-chat-expanded):has(.live-quota-overview) .app-layout main {
     display: grid;
     grid-template-columns: minmax(0,1fr) minmax(380px,46%);
-    grid-template-rows: auto auto minmax(0,1fr);
+    grid-template-rows: auto minmax(0,1fr) auto;
     column-gap: 16px;
     overflow: hidden;
   }
-  .office-workspace:has(.live-quota-overview[open]) .page-heading { grid-column: 1 / -1; }
-  .office-workspace:not(.is-chat-expanded):has(.live-quota-overview[open]) .live-quota-overview { grid-column: 1; grid-row: 2; }
-  .office-workspace:not(.is-chat-expanded):has(.live-quota-overview[open]) .work-area { display: contents; }
-  .office-workspace:not(.is-chat-expanded):has(.live-quota-overview[open]) .office-card { grid-column: 1; grid-row: 3; }
-  .office-workspace:not(.is-chat-expanded):has(.live-quota-overview[open]) .right-panel { grid-column: 2; grid-row: 2 / 4; }
+  .office-workspace:not(.is-chat-expanded):has(.live-quota-overview) .page-heading { grid-column: 1 / -1; }
+  .office-workspace:not(.is-chat-expanded):has(.live-quota-overview) .work-area { display: contents; }
+  .office-workspace:not(.is-chat-expanded):has(.live-quota-overview) .office-card { grid-column: 1; grid-row: 2; }
+  .office-workspace:not(.is-chat-expanded):has(.live-quota-overview) .live-quota-overview { grid-column: 1; grid-row: 3; margin: 12px 0 0; max-height: 45dvh; overflow-y: auto; }
+  .office-workspace:not(.is-chat-expanded):has(.live-quota-overview) .right-panel { grid-column: 2; grid-row: 2 / 4; }
 }
 
 @media (max-width: 900px) {

@@ -150,8 +150,8 @@ Launcher hiện chỉ cho các khóa trong danh sách `allowed` của `scripts/r
 
 Vì vậy bản hiện tại:
 
-- Chạy server và worker trên cùng máy qua localhost, cổng từ `PORT`.
-- Chưa hỗ trợ chọn server từ xa bằng cách chỉ thêm `AI_OFFICE_SERVER_URL` vào `.env`.
+- Mặc định chạy server và worker trên cùng máy qua localhost, cổng từ `PORT`.
+- Worker từ xa: đặt `AI_OFFICE_SERVER_URL` trong `.env` của máy worker (xem mục 7.1). Launcher chỉ nhận giá trị trong `.env`, không nhận từ biến môi trường kế thừa; bắt buộc `https://` (http chỉ cho localhost), không chứa tài khoản, đường dẫn hay query.
 - Chưa hỗ trợ hai tài khoản Codex, hai worker độc lập hoặc host ID tùy ý bằng cách chỉ thêm CODEX_HOME / AI_OFFICE_DATA_DIR / AI_OFFICE_HOST_ID.
 - Browser-harness và computer use bị tắt trong launcher; thêm cờ vào `.env` hiện chưa bật được.
 - Không có tài khoản AI, credential hoặc dữ liệu mẫu sản xuất được đóng gói sẵn.
@@ -161,6 +161,28 @@ Nếu được giao bổ sung worker từ xa hoặc nhiều tài khoản, AI tri
 Worker từ xa cần URL được kiểm tra, HTTPS và thông tin đăng nhập ứng dụng do người vận hành tự cấu hình. Không đưa credential vào URL/log/source, không gửi database qua worker, không dùng lại địa chỉ dịch vụ cũ. Thêm kiểm thử cho cấu hình, nhận việc đồng thời, quyền truy cập và đóng gói trước khi tuyên bố hỗ trợ.
 
 Không tự đăng nhập tài khoản, chạy inference thật, bật browser/desktop, cài service hệ thống hoặc deploy chỉ vì đang đọc tài liệu bàn giao này. Khi người dùng yêu cầu các bước đó, thực hiện đúng phạm vi được giao và để họ hoàn thành OAuth/cấp quyền tương tác.
+
+### 7.1 Worker từ xa (ví dụ máy Windows)
+
+Server chạy trên VPS sau HTTPS (nginx + certbot). Trên máy worker:
+
+```sh
+git clone <repo> office-ai && cd office-ai
+npm ci
+```
+
+Tạo `.env` bằng tay (không chạy `npm run setup`, vì setup sinh mật khẩu mới):
+
+```env
+OFFICE_USER=<giống server>
+OFFICE_PASSWORD=<giống server>
+AI_OFFICE_SERVER_URL=https://office-ai.example.org
+AI_OFFICE_MACHINE_NAME=PC Windows
+AI_OFFICE_PROVIDERS=claude,codex
+AI_OFFICE_ACCOUNT_LABEL=AI máy Windows
+```
+
+Sau đó `npm run login:codex` / `npm run login:claude` rồi `npm run worker`. Máy xuất hiện trong **Máy xử lý**; khi giao việc, chọn máy này và chọn thư mục làm việc trên máy đó. Worker nhận việc bằng cách gọi ra server (không cần mở cổng trên máy worker). Mật khẩu chỉ nằm trong `.env` của máy worker, không vào URL hay log.
 
 ## 8. Chẩn đoán thường gặp
 

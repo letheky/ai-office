@@ -83,6 +83,8 @@ if (location.protocol === 'file:') {
   const cli=cliFeatures({api,make,renderAnswer,capabilities:()=>capabilities,visibleId:()=>displayedResultId,contextJob:job=>contextJobForDisplay(job,jobs)});
   const routingText = value => String(value || '').replace(/(^|[→·]\s*|Bàn giao từ )(?:An|Linh|Minh|Mai|Bông|Nam|Hà|Tú)(?=\s|$)/g, '$1AI');
   const providerName = provider => provider === 'codex' ? 'Codex' : 'Claude';
+  // Default to the local worker machine (online first) instead of the legacy VPS group.
+  const preferredMachine = caps => { const machines = localMachines(caps || {}); return machines.find(machine => machine.online) || machines[0]; };
   const machineLabel = machine => `${machine.name} · ${{linux:'Linux',win32:'Windows',darwin:'macOS'}[machine.profile?.platform || machine.policy?.declaredPlatform] || 'chưa rõ OS'} · ${machine.online ? 'đang online' : 'offline'}`;
   const executorName = executor => isVpsExecutor(executor) ? 'VPS' :
     localMachines(capabilities || {}).find(machine => machine.id === executor || machine.members?.some(member => member.id === executor))?.name || 'Máy local';
@@ -871,7 +873,7 @@ if (location.protocol === 'file:') {
     if(!selected){try{selected=localStorage.getItem('moc-office-quota-machine')}catch{}}
     select.replaceChildren(new Option('VPS','vps'));
     for(const machine of localMachines(capabilities))select.append(new Option(machineLabel(machine),machine.id));
-    select.value=[...select.options].some(option=>option.value===selected)?selected:'vps';
+    select.value=[...select.options].some(option=>option.value===selected)?selected:(preferredMachine(capabilities)?.id||'vps');
     const cards=$('live-overview-cards'),scroll=cards.scrollTop;
     paintMachineUsage(cards,select.value,true);cards.scrollTop=scroll;
     overview.querySelector('.live-quota-overview-brief').textContent=quotaBrief(select.value);
@@ -1039,8 +1041,8 @@ if (location.protocol === 'file:') {
     executor.append(new Option('Worker máy chủ (tùy chọn)', 'vps'));
     localMachines(capabilities).forEach(machine => executor.append(new Option(
       machineLabel(machine), machine.id)));
-    const firstOnline = localMachines(capabilities).find(machine => machine.online);
-    if (firstOnline) executor.value = firstOnline.id;
+    const preferred = preferredMachine(capabilities);
+    if (preferred) executor.value = preferred.id;
     executorField.append(executor);
     const projectField = make('label', '', 'Dự án / Drive chung (tuỳ chọn)');
     const project = make('select'); project.id = 'live-project';
@@ -1084,8 +1086,8 @@ if (location.protocol === 'file:') {
     executor.addEventListener('change', () => { renderAccounts(); renderMachineUsage(); });
     renderAccounts(); renderMachineUsage();
     form.querySelector('.workflow-preview').hidden = true;
-    $('modal-title').textContent = 'Bạn muốn làm gì?';
-    $('task-modal').querySelector('.modal > p').textContent = 'Trao đổi và làm việc với AI trên máy bạn chọn. Có thể hỏi tiếp trong cùng cuộc hội thoại.';
+    $('modal-title').textContent = 'Hôm nay làm video nào?';
+    $('task-modal').querySelector('.modal > p').textContent = 'Chọn một bước bên dưới rồi điền số video, hoặc tự viết đề bài. Chọn máy Windows và thư mục repo video ở Máy xử lý. Có thể hỏi tiếp trong cùng cuộc hội thoại.';
     form.querySelector(':scope > small').textContent = capabilities.fileAccess
       ? 'AI thực hiện theo đề bài trên máy đã chọn. Bạn có thể yêu cầu tra cứu số liệu, tạo/sửa tệp hoặc xử lý công việc trong phần mềm.'
       : 'Hệ thống chọn AI phù hợp. AI chỉ tạo bản nháp theo quyền tài khoản.';
@@ -1132,7 +1134,7 @@ if (location.protocol === 'file:') {
     });
     $('sample-task').onclick = () => {
       stopSpeech();
-      $('brief').value = 'Đọc dự án trong thư mục tôi chọn và đề xuất 3 việc cần làm';
+      $('brief').value = 'Đọc repo video trong thư mục tôi chọn: liệt kê từng video đang làm dở, bước đã xong (kịch bản, soát, giọng, ảnh, dựng, QA, đăng) và bước tiếp theo. Chỉ đọc, không chạy gì tốn credit.';
       $('new-task').click();
     };
   }
@@ -1149,7 +1151,7 @@ if (location.protocol === 'file:') {
       localMachines(latest).forEach(machine => executor.append(new Option(
         machineLabel(machine), machine.id)));
       if ([...executor.options].some(option => option.value === chosen)) executor.value = chosen;
-      if(executor.value === 'vps' && !latest.vpsOnline) { const first=localMachines(latest).find(machine=>machine.online);if(first)executor.value=first.id; }
+      if(executor.value === 'vps') { const preferred=preferredMachine(latest);if(preferred)executor.value=preferred.id; }
       if(executor.value!==chosen)executor.dispatchEvent(new Event('change'));
       $('live-text').textContent = latest.vpsOnline || localMachines(latest).some(machine=>machine.online) ? 'AI đang online' : 'Chưa có worker AI online';
       window.mocOfficeRenderAccounts?.();
