@@ -60,3 +60,18 @@ test('remote worker accepts only an HTTPS server URL from .env, without credenti
   assert.equal(result.status,0,result.stderr);
  } finally { fs.rmSync(temp,{recursive:true,force:true}); }
 });
+test('Windows launcher resolves npm codex.cmd shims to the bundled native codex.exe',()=>{
+ const {windowsCli}=require('../scripts/runtime');
+ const temp=fs.mkdtempSync(path.join(os.tmpdir(),'office-wincli-test-'));
+ try {
+  const npm=path.join(temp,'npm'),native=path.join(temp,'native');
+  const vendor=path.join(npm,'node_modules/@openai/codex/node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc');
+  fs.mkdirSync(path.join(vendor,'codex'),{recursive:true});fs.mkdirSync(path.join(vendor,'path'));fs.mkdirSync(native);
+  fs.writeFileSync(path.join(npm,'codex.cmd'),'');fs.writeFileSync(path.join(vendor,'codex/codex.exe'),'');
+  assert.deepEqual(windowsCli('codex',`${native};${npm}`,'win32'),{binary:path.join(vendor,'codex/codex.exe'),tools:path.join(vendor,'path')});
+  fs.writeFileSync(path.join(native,'codex.exe'),'');
+  assert.deepEqual(windowsCli('codex',`${native};${npm}`,'win32'),{binary:path.join(native,'codex.exe')});
+  assert.equal(windowsCli('claude',`${native};${npm}`,'win32'),null);
+  assert.equal(windowsCli('codex',`${native};${npm}`,'linux'),null);
+ } finally { fs.rmSync(temp,{recursive:true,force:true}); }
+});
