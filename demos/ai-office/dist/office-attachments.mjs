@@ -14,12 +14,11 @@ export function attachmentControls({api, make, enabled}) {
     const dropController=new AbortController();dropHandlers.set(dropZone,dropController);
     dropZone.classList.add('live-drop-target');
     const box=make('section','live-attachments');
-    const label=make('label','','Thả tệp vào ô chat, dán ảnh (Ctrl+V) hoặc chọn tệp');
+    const label=make('label','','Đính kèm');
     const picker=make('input'); picker.type='file'; picker.multiple=true; picker.accept='image/*,video/*,.xlsx,.txt';
     label.append(picker);
-    const note=make('small','','Tối đa 10 tệp/lượt. Excel .xlsx, TXT và ảnh đến 20 MB/tệp gửi trực tiếp tới máy AI. Excel .xls cần lưu lại thành .xlsx. Video và ảnh lớn dùng Drive.');
-    const list=make('div','live-attachment-list'),status=make('p','live-followup-status');status.setAttribute('role','status');
-    box.append(label,note,list,status);
+        const list=make('div','live-attachment-list'),status=make('p','live-followup-status');status.setAttribute('role','status');
+    box.append(label,list,status);
     form.querySelector('[type=submit]').before(box);
     const paint=()=>{
       list.replaceChildren(); picker.disabled=state.busy;

@@ -17,10 +17,9 @@ export function mountSpeech({form, input, make, scope = form, win = window}) {
   const box = make('div', 'live-speech');
   const button = make('button', 'live-speech-button', '🎤 Nói'); button.type = 'button';
   button.setAttribute('aria-pressed', 'false');
-  const status = make('span', 'live-speech-status', 'Tiếng Việt · Xem lại rồi bấm Gửi');
+  const status = make('span', 'live-speech-status', '');
   status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite');
   const preview = make('span', 'live-speech-preview'); preview.hidden = true;
-  box.title = 'Nhận giọng nói bằng Chrome. Âm thanh có thể được gửi tới dịch vụ nhận dạng của trình duyệt; không qua server ứng dụng.';
   box.append(button, status, preview); input.after(box);
   let session = null, destroyed = false, internalInput = false;
   const send = form.querySelector('button[type="submit"]');

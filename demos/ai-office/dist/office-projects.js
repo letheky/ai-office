@@ -32,9 +32,9 @@ function render() {
   pane.replaceChildren();
   const head = make('div', 'section-top');
   head.append(make('h2', '', 'Tệp dự án'), make('span', 'small-pill', `${state.projects.length} dự án`));
-  pane.append(head, make('p', 'project-intro', 'Mỗi dự án có một thư mục Google Drive chung. Máy nhận việc tải đúng tệp về, xử lý rồi đẩy kết quả lên để máy/model tiếp theo dùng.'));
+  pane.append(head);
   if (!state.configured) {
-    pane.append(make('p', 'project-warning', 'Máy chủ chưa kết nối Drive chung. Liên hệ quản trị để cấu hình rclone.'));
+    pane.append(make('p', 'project-warning', 'Chưa cấu hình rclone.'));
     return;
   }
   const create = make('form', 'project-create');

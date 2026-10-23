@@ -1,10 +1,10 @@
-import { mountSpeech, stopSpeech } from './office-speech.mjs?v=1';
+import { mountSpeech, stopSpeech } from './office-speech.mjs?v=dev-1';
 import { runSlashAction } from './office-slash-actions.mjs?v=1';
 import {paintContext,contextJobForDisplay} from './office-context.mjs?v=3';
 import { mountSlash } from './office-slash.mjs?v=claude-context-1';
 import { latestConversationTurns } from './office-threads.mjs?v=2';
-import { attachmentControls } from './office-attachments.mjs?v=4';
-import { cliFeatures } from './office-cli.mjs?v=workspace-history-1';
+import { attachmentControls } from './office-attachments.mjs?v=dev-1';
+import { cliFeatures } from './office-cli.mjs?v=dev-1';
 import { renderAnswer } from './office-markdown.js?v=2';
 import { deletePassword } from './office-delete.mjs?v=2';
 import { renameConversation } from './office-rename.mjs?v=1';
@@ -65,7 +65,7 @@ if (location.protocol === 'file:') {
   const statusLabel = status => { const node=make('span','live-status',plainStatus[status]||status);node.dataset.status=status;return node; };
   const statusText = { waiting: 'Chờ phần trước / máy rảnh', pending: 'Đang xếp hàng', running: 'AI đang xử lý', done: 'Đã có kết quả', error: 'Cần thử lại' };
   const kindText = { sales: 'Doanh thu', product: 'Sản phẩm', video: 'Video', technical: 'Kỹ thuật', research: 'Nghiên cứu', design: 'Thiết kế', general: 'Việc khác' };
-  const setNote = message => { document.querySelector('.demo-note p').textContent = message; };
+  const setNote = message => { document.querySelector('.demo-note p').textContent = message; document.querySelector('.demo-note').hidden = false; };
   const showModal = id => { $(id).hidden = false; document.body.style.overflow = 'hidden'; };
   const hideModal = id => { $(id).hidden = true; document.body.style.overflow = ''; };
   async function api(path, options = {}) {
@@ -135,7 +135,7 @@ if (location.protocol === 'file:') {
     list.replaceChildren();
     const latest=latestConversationTurns(jobs);
     $('task-dot').style.display = jobs.some(job => ['pending', 'running'].includes(job.status)) ? 'block' : 'none';
-    if (!jobs.length) list.append(make('div', 'empty-tasks', 'Chưa có công việc. Hãy giao một câu hỏi để AI bắt đầu.'));
+    if (!jobs.length) list.append(make('div', 'empty-tasks', 'Trống'));
     const diffText = { easy: 'Dễ · model nhẹ', medium: 'Vừa · model chuẩn', hard: 'Khó · model mạnh' };
     const children = new Map();
     for (const job of jobs) if (job.planId && job.planId !== job.id && jobs.some(p => p.id === job.planId)) {
@@ -1088,10 +1088,8 @@ if (location.protocol === 'file:') {
     renderAccounts(); renderMachineUsage();
     form.querySelector('.workflow-preview').hidden = true;
     $('modal-title').textContent = 'Hôm nay làm video nào?';
-    $('task-modal').querySelector('.modal > p').textContent = 'Chọn một bước bên dưới rồi điền số video, hoặc tự viết đề bài. Chọn máy Windows và thư mục repo video ở Máy xử lý. Có thể hỏi tiếp trong cùng cuộc hội thoại.';
-    form.querySelector(':scope > small').textContent = capabilities.fileAccess
-      ? 'AI thực hiện theo đề bài trên máy đã chọn. Bạn có thể yêu cầu tra cứu số liệu, tạo/sửa tệp hoặc xử lý công việc trong phần mềm.'
-      : 'Hệ thống chọn AI phù hợp. AI chỉ tạo bản nháp theo quyền tài khoản.';
+    $('task-modal').querySelector('.modal > p').hidden = true;
+    form.querySelector(':scope > small').hidden = true;
     const initialAttachments=mountAttachments(form,$('brief'),'new-task',null);
     mountSpeech({form,input:$('brief'),make,scope:$('task-modal')});
     startNewChat=()=>{
@@ -1167,7 +1165,7 @@ if (location.protocol === 'file:') {
     $('live-text').textContent = capabilities.vpsOnline || localMachines(capabilities).some(machine=>machine.online) ? 'AI đang online' : 'Chưa có worker AI online';
     $('pause').hidden = true;
     setupForm();
-    setNote('Chọn máy đang online để giao việc. Chạy npm run worker nếu chưa có máy kết nối; tài khoản AI do bạn tự đăng nhập.');
+    document.querySelector('.demo-note').hidden = true;
     await refresh();
     setInterval(refresh, 3000);
     setInterval(refreshMachines, 10000);

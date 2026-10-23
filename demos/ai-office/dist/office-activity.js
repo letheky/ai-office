@@ -13,7 +13,7 @@ if (feed && window.mocOfficeLive?.snapshot) {
     count.textContent = events.length ? `${events.length} hoạt động` : 'Chưa có hoạt động';
     if (!events.length) {
       const empty = document.createElement('div'); empty.className = 'feed-item';
-      const text = document.createElement('p'); text.textContent = 'Chưa có việc nào chạy. Khi AI bắt đầu, xong việc, lỗi hoặc hết hạn mức, mọi thứ sẽ hiện ở đây.';
+      const text = document.createElement('p'); text.textContent = 'Trống';
       empty.append(text); feed.append(empty); return;
     }
     for (const event of events) {

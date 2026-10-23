@@ -1,6 +1,6 @@
 // Folder browsing happens on the selected worker; never use the browser's own
 // filesystem picker for a remote machine. CLI text/activity are plain data.
-import {workspacePicker} from './office-workspace.mjs?v=1';
+import {workspacePicker} from './office-workspace.mjs?v=dev-1';
 import {paintContext} from './office-context.mjs?v=3';
 const renderedAnswers=new WeakMap();
 export function paintStreamingAnswer(answer,text,status,renderAnswer){

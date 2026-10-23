@@ -150,3 +150,5 @@ html, body.office-workspace { height: 100%; overflow: hidden; }
   .office-workspace .top-right { gap:5px; }
   .office-workspace .top-right .avatar { display:none; }
 }
+/* Dev-facing build: no explanatory copy. */
+main > footer, #agent-desc, .workspace-panel-heading .eyebrow, #task-modal .modal > .eyebrow { display: none !important; }

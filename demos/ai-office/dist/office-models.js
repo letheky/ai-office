@@ -45,7 +45,6 @@ function render() {
     catch (error) { toast(error.message); refresh.disabled = false; refresh.textContent = '↻ Làm mới danh sách từ Claude/ChatGPT'; }
   };
   pane.append(refresh);
-  pane.append(make('p', 'cap-intro', 'Bật model muốn dùng, đặt effort tối đa cho từng model và chọn model cho từng mức việc. Chế độ tự động và chia việc dùng đúng bảng này; chọn tay khi giao việc cũng chỉ được trong giới hạn ở đây.'));
 
   const tiers = make('section', 'model-section');
   tiers.append(make('h3', '', 'Model theo mức độ việc'));
@@ -111,7 +110,7 @@ function render() {
     draft.enabled[value] = true; draft.maxEffort[value] = supported.at(-1);
     render();
   };
-  list.append(add, make('small', 'cap-muted', 'Model mã "claude-…" chạy bằng Claude CLI, còn lại bằng Codex CLI. Model tự thêm chỉ chạy được nếu tài khoản của bạn có quyền dùng; nếu sai, việc sẽ báo lỗi từ CLI.'));
+  list.append(add);
   pane.append(list);
 
   const save = make('button', 'primary full', 'Lưu cấu hình model'); save.type = 'button';

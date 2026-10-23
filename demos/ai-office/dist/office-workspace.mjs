@@ -19,7 +19,7 @@ export function workspacePicker({executor,make,enabled,browse}) {
   input.setAttribute('role','combobox');input.setAttribute('aria-autocomplete','list');input.setAttribute('aria-expanded','false');input.setAttribute('aria-controls','live-workspace-history');
   const list=make('div','live-workspace-history');list.id='live-workspace-history';list.setAttribute('role','listbox');list.setAttribute('aria-label','Thư mục đã chọn trên máy này');list.hidden=true;
   const button=make('button','soft-button','Chọn thư mục…');button.type='button';
-  box.append(input,list);row.append(box,button);field.append(label,row,make('small','','CLI mở ngay tại folder này và đọc hướng dẫn dự án ở đó.'));
+  box.append(input,list);row.append(box,button);field.append(label,row);
   let machine=executor.value,active=-1,options=[];
   function close(){list.hidden=true;input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');active=-1}
   function choose(path){input.value=path;values.set(machine,path);save(machine,path);close();input.focus()}
