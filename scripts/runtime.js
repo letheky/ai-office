@@ -28,7 +28,24 @@ function windowsCli(name,pathValue,platform=process.platform) {
   }
   return null;
 }
-function configure() {
+// `--account 2` (or --account=2) selects an extra AI account on this machine.
+function accountArg(argv) {
+  const i=argv.findIndex(a=>a==='--account'||a.startsWith('--account='));
+  if(i<0) return null;
+  const value=(argv[i].includes('=')?argv[i].split('=')[1]:argv[i+1]||'').toLowerCase();
+  if(!/^[a-z0-9][a-z0-9-]{0,19}$/.test(value)) throw new Error('--account chỉ nhận chữ, số và dấu gạch, tối đa 20 ký tự.');
+  return value==='1'||value==='default'?null:value;
+}
+// The default worker's identity doubles as the host ID for extra accounts.
+function hostId(dir) {
+  const file=path.join(dir,'ai-office-machine.json');
+  try { const id=JSON.parse(fs.readFileSync(file,'utf8')).id; if(/^[a-f0-9-]{36}$/.test(id||'')) return id; } catch {}
+  fs.mkdirSync(dir,{recursive:true,mode:0o700});
+  const id=require('crypto').randomUUID();
+  fs.writeFileSync(file,JSON.stringify({id},null,2),{mode:0o600});
+  return id;
+}
+function configure(argv=process.argv.slice(3)) {
   // Ignore inherited credentials and production endpoints. Only this app's .env is accepted.
   for(const key of Object.keys(process.env)) if(/^(AI_OFFICE_|SYNC_|OFFICE_|AUTH_|CODEX_|CLAUDE_|ANTHROPIC_|OPENAI_|RCLONE_)/.test(key)||/(_API_KEY|_TOKEN|_SECRET|_PASSWORD|_PASS)$/.test(key)) delete process.env[key];
   const file=path.join(root,'.env');
@@ -43,7 +60,16 @@ function configure() {
   const server=serverUrl(config.AI_OFFICE_SERVER_URL,port);
   process.env.SYNC_USER=process.env.OFFICE_USER; process.env.SYNC_PASS=process.env.OFFICE_PASSWORD;
   const runtime=path.join(root,'.runtime');
-  Object.assign(process.env,{CODEX_HOME:path.join(runtime,'profiles/codex'),CLAUDE_CONFIG_DIR:path.join(runtime,'profiles/claude'),RCLONE_CONFIG:path.join(runtime,'rclone.conf'),AI_OFFICE_DATA_DIR:path.join(runtime,'worker'),AI_OFFICE_SERVER_URL:server,AI_OFFICE_BROWSER_HARNESS:'0',AI_OFFICE_COMPUTER_USE:'0'});
+  const account=accountArg(argv);
+  // Extra accounts get their own CLI profiles and worker identity, and join the
+  // default worker's machine through its host ID so the UI shows one machine.
+  const suffix=account?`-${account}`:'';
+  Object.assign(process.env,{CODEX_HOME:path.join(runtime,`profiles/codex${suffix}`),CLAUDE_CONFIG_DIR:path.join(runtime,`profiles/claude${suffix}`),RCLONE_CONFIG:path.join(runtime,'rclone.conf'),AI_OFFICE_DATA_DIR:path.join(runtime,`worker${suffix}`),AI_OFFICE_SERVER_URL:server,AI_OFFICE_BROWSER_HARNESS:'0',AI_OFFICE_COMPUTER_USE:'0'});
+  if(account) {
+    const machineName=(process.env.AI_OFFICE_MACHINE_NAME||require('os').hostname()).slice(0,60);
+    Object.assign(process.env,{AI_OFFICE_HOST_ID:hostId(path.join(runtime,'worker')),AI_OFFICE_HOST_NAME:machineName,AI_OFFICE_MACHINE_NAME:machineName,
+      AI_OFFICE_ACCOUNT_LABEL:config[`AI_OFFICE_ACCOUNT_LABEL_${account.toUpperCase().replace(/-/g,'_')}`]||`${process.env.AI_OFFICE_ACCOUNT_LABEL||'AI'} ${account}`});
+  }
   for(const [name,key] of [['codex','AI_OFFICE_CODEX_BIN'],['claude','AI_OFFICE_CLAUDE_BIN']]) if(!process.env[key]) {
     const found=windowsCli(name,process.env.PATH||process.env.Path);
     if(found) { process.env[key]=found.binary; if(found.tools) process.env.PATH=found.tools+';'+(process.env.PATH||process.env.Path||''); }
@@ -51,4 +77,4 @@ function configure() {
   for(const dir of [process.env.CODEX_HOME,process.env.CLAUDE_CONFIG_DIR,process.env.AI_OFFICE_DATA_DIR]) fs.mkdirSync(dir,{recursive:true,mode:0o700});
   return {root};
 }
-module.exports={configure,serverUrl,windowsCli};
+module.exports={configure,serverUrl,windowsCli,accountArg};

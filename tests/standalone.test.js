@@ -60,6 +60,29 @@ test('remote worker accepts only an HTTPS server URL from .env, without credenti
   assert.equal(result.status,0,result.stderr);
  } finally { fs.rmSync(temp,{recursive:true,force:true}); }
 });
+test('--account gives an extra AI account its own profile and joins the default worker machine',()=>{
+ const root=path.join(__dirname,'..');
+ const {accountArg}=require('../scripts/runtime');
+ assert.equal(accountArg([]),null);assert.equal(accountArg(['--account','1']),null);
+ assert.equal(accountArg(['--account=2']),'2');assert.equal(accountArg(['--account','Work']),'work');
+ assert.throws(()=>accountArg(['--account','../x']));
+ const temp=fs.mkdtempSync(path.join(os.tmpdir(),'office-account-test-'));
+ try {
+  fs.mkdirSync(path.join(temp,'scripts'));fs.copyFileSync(path.join(root,'scripts/runtime.js'),path.join(temp,'scripts/runtime.js'));
+  fs.writeFileSync(path.join(temp,'.env'),'OFFICE_USER=test\nOFFICE_PASSWORD=test-runtime-password-1234\nAI_OFFICE_MACHINE_NAME=PC Windows\nAI_OFFICE_ACCOUNT_LABEL=Codex\nAI_OFFICE_ACCOUNT_LABEL_2=Codex phụ\n');
+  const run=account=>{
+   const script=`require(${JSON.stringify(path.join(temp,'scripts/runtime.js'))}).configure(${JSON.stringify(account)});console.log(JSON.stringify(Object.fromEntries(['CODEX_HOME','AI_OFFICE_DATA_DIR','AI_OFFICE_HOST_ID','AI_OFFICE_HOST_NAME','AI_OFFICE_ACCOUNT_LABEL'].map(k=>[k,process.env[k]]))));`;
+   const result=spawnSync(process.execPath,['-e',script],{cwd:root,env:{...process.env,NODE_PATH:path.join(root,'node_modules')},encoding:'utf8'});
+   assert.equal(result.status,0,result.stderr);return JSON.parse(result.stdout);
+  };
+  const main=run([]),extra=run(['--account','2']);
+  assert.equal(main.AI_OFFICE_HOST_ID,undefined);assert.equal(main.CODEX_HOME,path.join(temp,'.runtime/profiles/codex'));
+  assert.equal(extra.CODEX_HOME,path.join(temp,'.runtime/profiles/codex-2'));assert.equal(extra.AI_OFFICE_DATA_DIR,path.join(temp,'.runtime/worker-2'));
+  assert.equal(extra.AI_OFFICE_HOST_ID,JSON.parse(fs.readFileSync(path.join(temp,'.runtime/worker/ai-office-machine.json'),'utf8')).id);
+  assert.equal(extra.AI_OFFICE_HOST_NAME,'PC Windows');assert.equal(extra.AI_OFFICE_ACCOUNT_LABEL,'Codex phụ');
+  assert.equal(run(['--account','3']).AI_OFFICE_ACCOUNT_LABEL,'Codex 3');
+ } finally { fs.rmSync(temp,{recursive:true,force:true}); }
+});
 test('Windows launcher resolves npm codex.cmd shims to the bundled native codex.exe',()=>{
  const {windowsCli}=require('../scripts/runtime');
  const temp=fs.mkdtempSync(path.join(os.tmpdir(),'office-wincli-test-'));

@@ -127,7 +127,7 @@ npm run login:claude
 
 Chạy một `npm run worker`. Worker chỉ quảng bá provider đã xác minh đăng nhập thành công. Nếu một provider chưa đăng nhập, provider còn lại vẫn có thể hoạt động; nếu không có provider nào hợp lệ, worker thoát với thông báo lỗi. Khởi động lại worker sau khi đăng nhập thêm hoặc sửa `.env` vì danh sách provider sẵn sàng được tính lúc worker khởi động.
 
-Một worker HTTP hiện xử lý **một job mỗi lần**, dù bật cả hai provider. Không mô tả cấu hình này là hai worker song song. Cũng không chạy hai bản `npm run worker` trong cùng thư mục với hy vọng có hai tài khoản độc lập: chúng đang dùng chung hồ sơ và định danh worker.
+Một worker HTTP hiện xử lý **một job mỗi lần**, dù bật cả hai provider. Không mô tả cấu hình này là hai worker song song. Muốn thêm tài khoản thì dùng `--account` (mục 7.2); không chạy hai bản `npm run worker` trần trong cùng thư mục vì chúng dùng chung hồ sơ và định danh worker.
 
 ## 6. Vòng đời worker và hội thoại
 
@@ -152,7 +152,7 @@ Vì vậy bản hiện tại:
 
 - Mặc định chạy server và worker trên cùng máy qua localhost, cổng từ `PORT`.
 - Worker từ xa: đặt `AI_OFFICE_SERVER_URL` trong `.env` của máy worker (xem mục 7.1). Launcher chỉ nhận giá trị trong `.env`, không nhận từ biến môi trường kế thừa; bắt buộc `https://` (http chỉ cho localhost), không chứa tài khoản, đường dẫn hay query.
-- Chưa hỗ trợ hai tài khoản Codex, hai worker độc lập hoặc host ID tùy ý bằng cách chỉ thêm CODEX_HOME / AI_OFFICE_DATA_DIR / AI_OFFICE_HOST_ID.
+- Nhiều tài khoản trên một máy: dùng `--account` (mục 7.2). Không đặt CODEX_HOME / AI_OFFICE_DATA_DIR / AI_OFFICE_HOST_ID bằng biến môi trường; launcher xóa chúng.
 - Browser-harness và computer use bị tắt trong launcher; thêm cờ vào `.env` hiện chưa bật được.
 - Không có tài khoản AI, credential hoặc dữ liệu mẫu sản xuất được đóng gói sẵn.
 
@@ -183,6 +183,17 @@ AI_OFFICE_ACCOUNT_LABEL=AI máy Windows
 ```
 
 Sau đó `npm run login:codex` / `npm run login:claude` rồi `npm run worker`. Máy xuất hiện trong **Máy xử lý**; khi giao việc, chọn máy này và chọn thư mục làm việc trên máy đó. Worker nhận việc bằng cách gọi ra server (không cần mở cổng trên máy worker). Mật khẩu chỉ nằm trong `.env` của máy worker, không vào URL hay log.
+
+### 7.2 Thêm tài khoản Codex/Claude trên cùng máy
+
+Mỗi tài khoản thêm là một worker riêng, khởi động bằng `--account <tên>` (chữ, số, gạch; `1` là tài khoản mặc định):
+
+```
+npm run login:codex -- --account 2            # VPS không có trình duyệt: thêm --device-auth
+npm run worker -- --account 2
+```
+
+Launcher dùng hồ sơ `.runtime/profiles/codex-2/`, dữ liệu `.runtime/worker-2/` và gắn host ID là định danh của worker mặc định, nên giao diện hiện chung một máy với hai tài khoản. Nhãn lấy từ `AI_OFFICE_ACCOUNT_LABEL_2` trong `.env`, mặc định là `AI_OFFICE_ACCOUNT_LABEL` kèm ` 2`.
 
 ## 8. Chẩn đoán thường gặp
 
